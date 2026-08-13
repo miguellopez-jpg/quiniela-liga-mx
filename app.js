@@ -2,7 +2,7 @@
 // QUINIELA LIGA MX — lógica de la aplicación (vanilla JS)
 // ============================================================
 
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
 const LS_USER = "quiniela_user"; // {id, nombre, pin}
 const LS_ADMIN = "quiniela_admin_key";
@@ -39,7 +39,7 @@ $("#loginForm").addEventListener("submit", async (e) => {
   msg.textContent = "Entrando...";
   msg.classList.remove("error");
 
-  const { data, error } = await supabase.rpc("login_participante", { p_nombre: nombre, p_pin: pin });
+  const { data, error } = await sb.rpc("login_participante", { p_nombre: nombre, p_pin: pin });
   if (error) {
     msg.textContent = "Error de conexión. Intenta de nuevo.";
     msg.classList.add("error");
@@ -91,7 +91,7 @@ async function loadPredicciones() {
   const container = $("#prediccionesContainer");
   container.innerHTML = "Cargando...";
 
-  const { data: jornadas } = await supabase
+  const { data: jornadas } = await sb
     .from("jornadas")
     .select("*")
     .eq("estado", "abierta")
@@ -104,13 +104,13 @@ async function loadPredicciones() {
 
   container.innerHTML = "";
   for (const j of jornadas) {
-    const { data: partidos } = await supabase
+    const { data: partidos } = await sb
       .from("partidos")
       .select("*")
       .eq("jornada_id", j.id)
       .order("orden", { ascending: true });
 
-    const { data: mias } = await supabase.rpc("mis_predicciones", {
+    const { data: mias } = await sb.rpc("mis_predicciones", {
       p_participante_id: currentUser.id,
       p_pin: currentUser.pin,
       p_jornada_id: j.id,
@@ -163,7 +163,7 @@ async function guardarJornadaPredicciones(jornadaId, card, btn) {
     const l = inp.value;
     const v = visInp.value;
     if (l === "" || v === "") continue; // se permite dejar partidos sin llenar
-    const { data, error } = await supabase.rpc("guardar_prediccion", {
+    const { data, error } = await sb.rpc("guardar_prediccion", {
       p_participante_id: currentUser.id,
       p_pin: currentUser.pin,
       p_partido_id: Number(partidoId),
@@ -189,7 +189,7 @@ async function guardarJornadaPredicciones(jornadaId, card, btn) {
 async function loadTablaGeneral() {
   const container = $("#tablaGeneralContainer");
   container.innerHTML = "Cargando...";
-  const { data, error } = await supabase.rpc("tabla_general");
+  const { data, error } = await sb.rpc("tabla_general");
   if (error || !data || data.length === 0) {
     container.innerHTML = '<p class="muted">Aún no hay jornadas finalizadas.</p>';
     return;
@@ -216,7 +216,7 @@ async function loadTablaGeneral() {
 // TAB: JORNADAS (historial)
 // ------------------------------------------------------------
 async function loadJornadasHistorial() {
-  const { data: jornadas } = await supabase.from("jornadas").select("*").order("numero", { ascending: false });
+  const { data: jornadas } = await sb.from("jornadas").select("*").order("numero", { ascending: false });
   const select = $("#jornadaSelect");
   select.innerHTML = "";
   (jornadas || []).forEach((j) => {
@@ -235,11 +235,11 @@ async function renderJornadaDetalle(jornadaId) {
   container.innerHTML = "Cargando...";
   jornadaId = Number(jornadaId);
 
-  const { data: jornadaArr } = await supabase.from("jornadas").select("*").eq("id", jornadaId);
+  const { data: jornadaArr } = await sb.from("jornadas").select("*").eq("id", jornadaId);
   const jornada = jornadaArr && jornadaArr[0];
   if (!jornada) { container.innerHTML = ""; return; }
 
-  const { data: partidos } = await supabase.from("partidos").select("*").eq("jornada_id", jornadaId).order("orden");
+  const { data: partidos } = await sb.from("partidos").select("*").eq("jornada_id", jornadaId).order("orden");
 
   container.innerHTML = "";
 
@@ -270,7 +270,7 @@ async function renderJornadaDetalle(jornadaId) {
   container.appendChild(partidosCard);
 
   if (jornada.estado === "finalizada") {
-    const { data: ranking } = await supabase.rpc("tabla_jornada", { p_jornada_id: jornadaId });
+    const { data: ranking } = await sb.rpc("tabla_jornada", { p_jornada_id: jornadaId });
     const rankCard = el("div", "card");
     rankCard.appendChild(el("h3", "", "Puntos de esta jornada"));
     if (ranking && ranking.length > 0) {
@@ -308,7 +308,7 @@ $("#adminLoginBtn").addEventListener("click", async () => {
   msg.textContent = "Verificando...";
   msg.classList.remove("error");
 
-  const { data, error } = await supabase.rpc("admin_verificar", { p_admin_key: key });
+  const { data, error } = await sb.rpc("admin_verificar", { p_admin_key: key });
   if (error) {
     msg.textContent = "Error de conexión";
     msg.classList.add("error");
@@ -328,7 +328,7 @@ $("#adminLoginBtn").addEventListener("click", async () => {
 });
 
 async function loadAdminJornadas() {
-  const { data, error } = await supabase.rpc("admin_listar_jornadas", { p_admin_key: adminKey });
+  const { data, error } = await sb.rpc("admin_listar_jornadas", { p_admin_key: adminKey });
   const select = $("#adminJornadaSelect");
   select.innerHTML = "";
   if (error || !data) return;
@@ -356,7 +356,7 @@ async function renderAdminJornada(jornadaId, jornadasData) {
   $("#cerrarJornadaBtn").disabled = jornada.estado !== "abierta";
   $("#finalizarJornadaBtn").disabled = jornada.estado !== "cerrada";
 
-  const { data: partidos } = await supabase.from("partidos").select("*").eq("jornada_id", jornadaId).order("orden");
+  const { data: partidos } = await sb.from("partidos").select("*").eq("jornada_id", jornadaId).order("orden");
   const list = $("#adminPartidosList");
   list.innerHTML = "";
   (partidos || []).forEach((p) => {
@@ -383,7 +383,7 @@ async function renderAdminJornada(jornadaId, jornadasData) {
         const l = row.querySelector(".res-local").value;
         const v = row.querySelector(".res-visitante").value;
         if (l === "" || v === "") return;
-        const { data } = await supabase.rpc("admin_cargar_resultado", {
+        const { data } = await sb.rpc("admin_cargar_resultado", {
           p_admin_key: adminKey,
           p_partido_id: p.id,
           p_local: Number(l),
@@ -400,7 +400,7 @@ $("#crearJornadaBtn").addEventListener("click", async () => {
   const numero = $("#nuevaJornadaNum").value;
   const msg = $("#crearJornadaMsg");
   if (!numero) return;
-  const { data, error } = await supabase.rpc("admin_crear_jornada", { p_admin_key: adminKey, p_numero: Number(numero) });
+  const { data, error } = await sb.rpc("admin_crear_jornada", { p_admin_key: adminKey, p_numero: Number(numero) });
   const row = data && data[0];
   msg.textContent = (row && row.mensaje) || "Error";
   msg.classList.toggle("error", !(row && row.ok));
@@ -416,7 +416,7 @@ $("#agregarPartidoBtn").addEventListener("click", async () => {
   const visitante = $("#partidoVisitante").value.trim();
   const msg = $("#agregarPartidoMsg");
   if (!local || !visitante || !jornadaId) return;
-  const { data, error } = await supabase.rpc("admin_agregar_partido", {
+  const { data, error } = await sb.rpc("admin_agregar_partido", {
     p_admin_key: adminKey, p_jornada_id: jornadaId, p_local: local, p_visitante: visitante,
   });
   const row = data && data[0];
@@ -433,7 +433,7 @@ $("#cerrarJornadaBtn").addEventListener("click", async () => {
   const jornadaId = Number($("#adminJornadaSelect").value);
   if (!jornadaId) return;
   if (!confirm("¿Cerrar esta jornada? Nadie podrá editar predicciones después de esto.")) return;
-  const { data } = await supabase.rpc("admin_cerrar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
+  const { data } = await sb.rpc("admin_cerrar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
   $("#adminAccionMsg").textContent = (data && data[0] && data[0].mensaje) || "Listo";
   loadAdminJornadas();
 });
@@ -442,7 +442,7 @@ $("#finalizarJornadaBtn").addEventListener("click", async () => {
   const jornadaId = Number($("#adminJornadaSelect").value);
   if (!jornadaId) return;
   if (!confirm("¿Finalizar jornada y calcular puntos? Asegúrate de haber cargado todos los resultados.")) return;
-  const { data } = await supabase.rpc("admin_finalizar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
+  const { data } = await sb.rpc("admin_finalizar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
   const row = data && data[0];
   $("#adminAccionMsg").textContent = (row && row.mensaje) || "Error";
   $("#adminAccionMsg").classList.toggle("error", !(row && row.ok));
@@ -455,7 +455,7 @@ $("#eliminarJornadaBtn").addEventListener("click", async () => {
   const jornadaId = Number($("#adminJornadaSelect").value);
   if (!jornadaId) return;
   if (!confirm("¿Eliminar esta jornada por completo? Esta acción no se puede deshacer.")) return;
-  const { data } = await supabase.rpc("admin_eliminar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
+  const { data } = await sb.rpc("admin_eliminar_jornada", { p_admin_key: adminKey, p_jornada_id: jornadaId });
   $("#adminAccionMsg").textContent = (data && data[0] && data[0].mensaje) || "Listo";
   loadAdminJornadas();
   loadJornadasHistorial();
