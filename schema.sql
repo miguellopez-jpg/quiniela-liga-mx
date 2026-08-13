@@ -121,7 +121,7 @@ begin
     return;
   end if;
 
-  select * into v_row from participantes where lower(nombre) = lower(trim(p_nombre));
+  select * into v_row from participantes pt where lower(pt.nombre) = lower(trim(p_nombre));
 
   if not found then
     insert into participantes (nombre, pin_hash)
