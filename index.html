@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiniela Liga MX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-ball">⚽</span>
+      <div class="brand-text">
+        <h1>Quiniela <span class="gold">Liga MX</span></h1>
+        <p class="brand-sub">Predicciones entre amigos</p>
+      </div>
+    </div>
+    <div id="userBox" class="user-box hidden">
+      <span id="userName" class="user-name"></span>
+      <button id="logoutBtn" class="btn-ghost small">Salir</button>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <h2>Entra a la quiniela</h2>
+      <p class="muted">Escribe tu nombre y un PIN de 4 dígitos. Si es tu primera vez, se crea tu cuenta automáticamente. Si ya jugaste antes, usa el mismo PIN.</p>
+      <form id="loginForm">
+        <label>Nombre / apodo</label>
+        <input id="loginNombre" type="text" maxlength="40" placeholder="Ej. Miguel" required>
+        <label>PIN (4 dígitos)</label>
+        <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="••••" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <p id="loginMsg" class="form-msg"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- MAIN APP (oculto hasta login) -->
+  <div id="mainApp" class="hidden">
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="predicciones">Predicciones</button>
+      <button class="tab-btn" data-tab="tabla">Tabla general</button>
+      <button class="tab-btn" data-tab="jornadas">Jornadas</button>
+      <button class="tab-btn" data-tab="admin">Admin</button>
+    </nav>
+
+    <main class="content">
+
+      <!-- TAB: PREDICCIONES -->
+      <section id="tab-predicciones" class="tab-panel active">
+        <h2>Jornadas abiertas</h2>
+        <div id="prediccionesContainer" class="stack"></div>
+      </section>
+
+      <!-- TAB: TABLA GENERAL -->
+      <section id="tab-tabla" class="tab-panel">
+        <h2>Tabla general</h2>
+        <div id="tablaGeneralContainer" class="stack"></div>
+      </section>
+
+      <!-- TAB: JORNADAS -->
+      <section id="tab-jornadas" class="tab-panel">
+        <h2>Historial de jornadas</h2>
+        <select id="jornadaSelect" class="select-input"></select>
+        <div id="jornadaDetalle" class="stack"></div>
+      </section>
+
+      <!-- TAB: ADMIN -->
+      <section id="tab-admin" class="tab-panel">
+        <div id="adminLogin" class="login-card small-card">
+          <h2>Acceso administrador</h2>
+          <input id="adminKeyInput" type="password" placeholder="Clave de administrador">
+          <button id="adminLoginBtn" class="btn-primary">Entrar como admin</button>
+          <p id="adminLoginMsg" class="form-msg"></p>
+        </div>
+
+        <div id="adminPanel" class="stack hidden">
+
+          <div class="card">
+            <h3>Crear nueva jornada</h3>
+            <div class="row">
+              <input id="nuevaJornadaNum" type="number" min="1" placeholder="Número de jornada (ej. 5)">
+              <button id="crearJornadaBtn" class="btn-primary">Crear jornada</button>
+            </div>
+            <p id="crearJornadaMsg" class="form-msg"></p>
+          </div>
+
+          <div class="card">
+            <h3>Administrar jornada</h3>
+            <select id="adminJornadaSelect" class="select-input"></select>
+            <div id="adminJornadaEstado" class="badge-row"></div>
+
+            <div id="agregarPartidoBox" class="subsection">
+              <h4>Agregar partido</h4>
+              <div class="row">
+                <input id="partidoLocal" type="text" placeholder="Equipo local">
+                <span class="vs">vs</span>
+                <input id="partidoVisitante" type="text" placeholder="Equipo visitante">
+                <button id="agregarPartidoBtn" class="btn-secondary">Agregar</button>
+              </div>
+              <p id="agregarPartidoMsg" class="form-msg"></p>
+            </div>
+
+            <div id="adminPartidosList" class="stack"></div>
+
+            <div class="row admin-actions">
+              <button id="cerrarJornadaBtn" class="btn-secondary">Cerrar predicciones</button>
+              <button id="finalizarJornadaBtn" class="btn-primary">Finalizar jornada (calcular puntos)</button>
+              <button id="eliminarJornadaBtn" class="btn-danger">Eliminar jornada</button>
+            </div>
+            <p id="adminAccionMsg" class="form-msg"></p>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
